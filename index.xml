@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Sean&#39;s Blog</title>
+    <title>Sean&#39;s Tech Blog</title>
     <link>http://hubbins.github.io/index.xml</link>
-    <description>Recent content on Sean&#39;s Blog</description>
+    <description>Recent content on Sean&#39;s Tech Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Sun, 12 Feb 2017 09:25:39 -0600</lastBuildDate>
@@ -15,8 +15,30 @@
       <pubDate>Sun, 12 Feb 2017 09:25:39 -0600</pubDate>
       
       <guid>http://hubbins.github.io/post/hugo-test/</guid>
-      <description>&lt;p&gt;This is just a test.&lt;/p&gt;
-</description>
+      <description>&lt;p&gt;This is just a test.
+&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;package com.morningstar.alerts.spring.sample.configuration;
+
+import com.morningstar.alerts.spring.sample.interceptor.TestInterceptor;
+import com.morningstar.alerts.spring.sample.interceptor.TestInterceptor2;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+@Configuration
+@EnableWebMvc
+public class WebConfig extends WebMvcConfigurerAdapter {
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        // register interceptors here http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#mvc-config-interceptors
+        registry.addInterceptor(new TestInterceptor());
+        registry.addInterceptor(new TestInterceptor2());
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;</description>
     </item>
     
   </channel>
