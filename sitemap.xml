@@ -7,6 +7,15 @@
   </url>
   
   <url>
+    <loc>http://hubbins.github.io/page/about/</loc>
+  </url>
+  
+  <url>
+    <loc>http://hubbins.github.io/page/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>http://hubbins.github.io/post/</loc>
     <lastmod>2017-02-12T09:25:39-06:00</lastmod>
     <priority>0</priority>

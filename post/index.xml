@@ -6,6 +6,8 @@
     <description>Recent content in Posts on Sean&#39;s Tech Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
+    <managingEditor>blog@soconnor.org (Sean O&#39;Connor)</managingEditor>
+    <webMaster>blog@soconnor.org (Sean O&#39;Connor)</webMaster>
     <lastBuildDate>Sun, 12 Feb 2017 09:25:39 -0600</lastBuildDate>
     <atom:link href="http://hubbins.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     
@@ -13,7 +15,7 @@
       <title>hugo test</title>
       <link>http://hubbins.github.io/post/hugo-test/</link>
       <pubDate>Sun, 12 Feb 2017 09:25:39 -0600</pubDate>
-      
+      <author>blog@soconnor.org (Sean O&#39;Connor)</author>
       <guid>http://hubbins.github.io/post/hugo-test/</guid>
       <description>&lt;p&gt;This is just a test.
 &lt;/p&gt;
