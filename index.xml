@@ -8,8 +8,23 @@
     <language>en-us</language>
     <managingEditor>blog@soconnor.org (Sean O&#39;Connor)</managingEditor>
     <webMaster>blog@soconnor.org (Sean O&#39;Connor)</webMaster>
-    <lastBuildDate>Sun, 12 Feb 2017 09:25:39 -0600</lastBuildDate>
+    <lastBuildDate>Tue, 28 Mar 2017 02:08:39 -0500</lastBuildDate>
     <atom:link href="http://hubbins.github.io/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Installing JDK8 in bash for Windows</title>
+      <link>http://hubbins.github.io/post/Installing%20JDK8%20in%20bash%20for%20windows/</link>
+      <pubDate>Tue, 28 Mar 2017 02:08:39 -0500</pubDate>
+      <author>blog@soconnor.org (Sean O&#39;Connor)</author>
+      <guid>http://hubbins.github.io/post/Installing%20JDK8%20in%20bash%20for%20windows/</guid>
+      <description>&lt;p&gt;After digging through some posts and bug reports, found the solution.  Archiving it here for future reference.
+&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;sudo add-apt-repository ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get install oracle-java8-installer
+&lt;/code&gt;&lt;/pre&gt;</description>
+    </item>
     
     <item>
       <title>hugo test</title>
