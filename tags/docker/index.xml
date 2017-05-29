@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Sean&#39;s Tech Blog</title>
-    <link>http://hubbins.github.io/index.xml</link>
-    <description>Recent content on Sean&#39;s Tech Blog</description>
+    <title>Docker on Sean&#39;s Tech Blog</title>
+    <link>http://hubbins.github.io/tags/docker/index.xml</link>
+    <description>Recent content in Docker on Sean&#39;s Tech Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <managingEditor>blog@soconnor.org (Sean O&#39;Connor)</managingEditor>
     <webMaster>blog@soconnor.org (Sean O&#39;Connor)</webMaster>
-    <lastBuildDate>Sun, 28 May 2017 20:00:00 -0500</lastBuildDate>
-    <atom:link href="http://hubbins.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://hubbins.github.io/tags/docker/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Running a .NET Core standalone deployment in an Ubuntu docker container</title>
@@ -77,63 +76,6 @@ ENTRYPOINT [&amp;quot;/WebApplication3/WebApplication3&amp;quot;]
 &lt;p&gt;To test, I ran the new Docker image with the parameters &amp;ldquo;-it -p 5000:5000&amp;rdquo;.  After finding the ip address of the running container and accessing using port 5000, the sample web app was running without any problems.&lt;/p&gt;
 
 &lt;p&gt;In the future, I can use the base container image and focus on the application.&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>Installing JDK8 in bash for Windows</title>
-      <link>http://hubbins.github.io/post/Installing%20JDK8%20in%20bash%20for%20windows/</link>
-      <pubDate>Tue, 28 Mar 2017 02:08:39 -0500</pubDate>
-      <author>blog@soconnor.org (Sean O&#39;Connor)</author>
-      <guid>http://hubbins.github.io/post/Installing%20JDK8%20in%20bash%20for%20windows/</guid>
-      <description>&lt;p&gt;After digging through some posts and bug reports, found the solution.  Archiving it here for future reference.
-&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;sudo add-apt-repository ppa:webupd8team/java
-sudo apt-get update
-sudo apt-get install oracle-java8-installer
-&lt;/code&gt;&lt;/pre&gt;</description>
-    </item>
-    
-    <item>
-      <title>hugo test</title>
-      <link>http://hubbins.github.io/post/hugo-test/</link>
-      <pubDate>Sun, 12 Feb 2017 09:25:39 -0600</pubDate>
-      <author>blog@soconnor.org (Sean O&#39;Connor)</author>
-      <guid>http://hubbins.github.io/post/hugo-test/</guid>
-      <description>&lt;p&gt;This is just a test.
-&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;package com.morningstar.alerts.spring.sample.configuration;
-
-import com.morningstar.alerts.spring.sample.interceptor.TestInterceptor;
-import com.morningstar.alerts.spring.sample.interceptor.TestInterceptor2;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-
-@Configuration
-@EnableWebMvc
-public class WebConfig extends WebMvcConfigurerAdapter {
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        // register interceptors here http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#mvc-config-interceptors
-        registry.addInterceptor(new TestInterceptor());
-        registry.addInterceptor(new TestInterceptor2());
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;</description>
-    </item>
-    
-    <item>
-      <title>About me</title>
-      <link>http://hubbins.github.io/page/about/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <author>blog@soconnor.org (Sean O&#39;Connor)</author>
-      <guid>http://hubbins.github.io/page/about/</guid>
-      <description>&lt;p&gt;This is the new about page.  More coming soon.&lt;/p&gt;
-</description>
     </item>
     
   </channel>

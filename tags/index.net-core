@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
-  <title>About me</title>
+  <title>.Net Core</title>
   
   <meta name="author" content="Sean O&#39;Connor"/>
   <meta name="generator" content="Hugo 0.18.1" />
@@ -21,9 +21,9 @@
   <link rel="stylesheet" href="http://hubbins.github.io//css/pygment_highlights.css" />
   
   
-  <meta property="og:title" content="About me" />
+  <meta property="og:title" content=".Net Core" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="/page/about/" />
+  <meta property="og:url" content="/tags/index.net-core/" />
   <meta property="og:image" content="/" />
 
   
@@ -81,31 +81,14 @@
 
 
     
-  
-  
-  
-
-
-
-
-  
-
   <header class="header-section ">
-    
     <div class="intro-header no-img">
-      
       <div class="container">
         <div class="row">
           <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
             <div class="page-heading">
-              <h1>About me</h1>
-                
-                  
-                    <hr class="small">
-                    <span class="page-subheading">Life-long technology learner</span>
-                  
-                
-                
+              <h1>#.Net Core</h1>
+              <hr class="small">
             </div>
           </div>
         </div>
@@ -113,26 +96,53 @@
     </div>
   </header>
 
-
     
-<div class="container">
-  <div class="row">
-    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-      <article role="main" class="blog-post">
-        <p>This is the new about page.  More coming soon.</p>
-
-      </article>
-
-      <ul class="pager blog-pager">
+  <div class="container" role="main">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
         
+        <div class="posts-list">
+          
+            <article class="post-preview">
+              <a href="http://hubbins.github.io/post/docker-ubuntu/">
+                <h2 class="post-title">Running a .NET Core standalone deployment in an Ubuntu docker container</h2>
+    
+                
+              </a>
+    
+              <p class="post-meta">
+                Posted on May 28, 2017
+              </p>
+              <div class="post-entry">
+                
+                  
+                  <a href="http://hubbins.github.io/post/docker-ubuntu/" class="post-read-more">[Read More]</a>
+                
+              </div>
+    
+              
+                <span class="post-meta">
+                  
+                    #<a href="/tags/development">Development</a>&nbsp;
+                  
+                    #<a href="/tags/docker">Docker</a>&nbsp;
+                  
+                    #<a href="/tags/c">C#</a>&nbsp;
+                  
+                    #<a href="/tags/.net-core">.NET Core</a>&nbsp;
+                  
+                    #<a href="/tags/ubuntu">Ubuntu</a>&nbsp;
+                  
+                </span>
+              
+    
+            </article>
+          
+        </div>
         
-      </ul>
-
-      
-
+      </div>
     </div>
   </div>
-</div>
 
     <footer>
   <div class="container">
