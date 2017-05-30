@@ -6,15 +6,15 @@
     <description>Recent content in Development on Sean&#39;s Tech Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <managingEditor>blog@soconnor.org (Sean O&#39;Connor)</managingEditor>
-    <webMaster>blog@soconnor.org (Sean O&#39;Connor)</webMaster>
+    <managingEditor>blog@hubbins.com (Sean O&#39;Connor)</managingEditor>
+    <webMaster>blog@hubbins.com (Sean O&#39;Connor)</webMaster>
     <atom:link href="http://hubbins.github.io/categories/development/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Running a .NET Core standalone deployment in an Ubuntu docker container</title>
       <link>http://hubbins.github.io/post/docker-ubuntu/</link>
       <pubDate>Sun, 28 May 2017 20:00:00 -0500</pubDate>
-      <author>blog@soconnor.org (Sean O&#39;Connor)</author>
+      <author>blog@hubbins.com (Sean O&#39;Connor)</author>
       <guid>http://hubbins.github.io/post/docker-ubuntu/</guid>
       <description>&lt;p&gt;Steps for creating a base container for .NET deployments in Ubuntu and deploying a sample application.
 &lt;/p&gt;
