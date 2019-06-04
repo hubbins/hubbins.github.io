@@ -6,15 +6,15 @@
     <description>Recent content in Pages on Sean&#39;s Tech Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <managingEditor>blog@soconnor.org (Sean O&#39;Connor)</managingEditor>
-    <webMaster>blog@soconnor.org (Sean O&#39;Connor)</webMaster>
+    <managingEditor>blog@hubbins.com (Sean O&#39;Connor)</managingEditor>
+    <webMaster>blog@hubbins.com (Sean O&#39;Connor)</webMaster>
     <atom:link href="http://hubbins.github.io/page/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>About me</title>
       <link>http://hubbins.github.io/page/about/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <author>blog@soconnor.org (Sean O&#39;Connor)</author>
+      <author>blog@hubbins.com (Sean O&#39;Connor)</author>
       <guid>http://hubbins.github.io/page/about/</guid>
       <description>&lt;p&gt;This is the new about page.  More coming soon.&lt;/p&gt;
 </description>
