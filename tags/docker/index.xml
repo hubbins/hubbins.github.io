@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Docker on Sean&#39;s Tech Blog</title>
+    <link>http://hubbins.github.io/tags/docker/index.xml</link>
+    <description>Recent content in Docker on Sean&#39;s Tech Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <managingEditor>blog@hubbins.com (Sean O&#39;Connor)</managingEditor>
+    <webMaster>blog@hubbins.com (Sean O&#39;Connor)</webMaster>
+    <atom:link href="http://hubbins.github.io/tags/docker/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Running a .NET Core standalone deployment in an Ubuntu docker container</title>
+      <link>http://hubbins.github.io/post/docker-ubuntu/</link>
+      <pubDate>Sun, 28 May 2017 20:00:00 -0500</pubDate>
+      <author>blog@hubbins.com (Sean O&#39;Connor)</author>
+      <guid>http://hubbins.github.io/post/docker-ubuntu/</guid>
+      <description>&lt;p&gt;Steps for creating a base container for .NET deployments in Ubuntu and deploying a sample application.
+&lt;/p&gt;
+
+&lt;p&gt;I wanted to create a self-contained deployment of a .NET Core app in Linux without having to
+install the .NET Core runtime.&lt;/p&gt;
+
+&lt;p&gt;I followed the steps in &lt;a href=&#34;https://blogs.msdn.microsoft.com/luisdem/2017/03/19/net-core-1-1-how-to-publish-a-self-contained-application/&#34;&gt;this post&lt;/a&gt; to publish an Ubuntu 16.10 standalone deployment.  This is a folder that needs to be copied and run in Ubuntu.&lt;/p&gt;
+
+&lt;p&gt;What was not immediately clear from the documentation that I read, was there were several packages that needed to be installed in Ubuntu for native dependencies.  Initially, I thought I could just copy the files over and run the web application.  The further down the rabbit hole, the more apparent it was that this would be a really good application of a Docker container, as there were many missing dependencies.&lt;/p&gt;
+
+&lt;p&gt;The container should have a base Ubuntu 16.10 image and the native dependencies needed for .NET Core.  Then it would be very easy to layer any application on top of this image and not worry about managing any native distribution-specific dependencies.  This container could then be deployed in any environment running the Docker service.&lt;/p&gt;
+
+&lt;p&gt;Here&amp;rsquo;s the Dockerfile for the base container:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;FROM ubuntu:16.10
+
+# get native dependencies used by the .net core runtime
+RUN apt-get update &amp;amp;&amp;amp; apt-get -y install \
+    libunwind8 \
+        libunwind8-dev \
+        gettext \
+        libicu-dev \
+        liblttng-ust-dev \
+        libcurl4-openssl-dev \
+        libssl-dev \
+        uuid-dev \
+        unzip
+
+# expose the default kestrel port and allow it to accept external connections
+EXPOSE 5000
+ENV ASPNETCORE_URLS=http://*:5000/
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Build the image defined above with the command:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;docker build -t=&amp;quot;hubbins/ubuntu-netcore&amp;quot; .
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;After doing the build to publish our web app code (from the blog post linked above):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;dotnet publish -c release -r ubuntu.16.10-x64
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;In another folder, I copied the published release folder to my linux server (happened to be running CentoOS 7) and built the application container image using this Dockerfile:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;FROM hubbins/ubuntu-netcore
+
+# copy the local files to the container folder
+COPY ./WebApplication3 /WebApplication3/
+
+# set the directory in the container
+WORKDIR /WebApplication3
+
+# make the app executable
+RUN chmod +x WebApplication3
+
+# run the app when the container is started
+ENTRYPOINT [&amp;quot;/WebApplication3/WebApplication3&amp;quot;]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Built using:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;docker build .
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;To test, I ran the new Docker image with the parameters &amp;ldquo;-it -p 5000:5000&amp;rdquo;.  After finding the ip address of the running container and accessing using port 5000, the sample web app was running without any problems.&lt;/p&gt;
+
+&lt;p&gt;In the future, I can use the base distribution-specific container image and focus on the application.  The container image should be able to run in any environment.&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>
