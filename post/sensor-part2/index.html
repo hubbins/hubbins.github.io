@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
-  <title>.Net Core</title>
+  <title>Building an IoT temperature sensor (Part 2 of 3)</title>
   
   <meta name="author" content="Sean O&#39;Connor"/>
   <meta name="generator" content="Hugo 0.18.1" />
@@ -21,9 +21,9 @@
   <link rel="stylesheet" href="http://hubbins.github.io//css/pygment_highlights.css" />
   
   
-  <meta property="og:title" content=".Net Core" />
+  <meta property="og:title" content="Building an IoT temperature sensor (Part 2 of 3)" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="/tags/index.net-core/" />
+  <meta property="og:url" content="/post/sensor-part2/" />
   <meta property="og:image" content="/" />
 
   
@@ -81,14 +81,33 @@
 
 
     
+  
+  
+  
+
+
+
+
+  
+
   <header class="header-section ">
+    
     <div class="intro-header no-img">
+      
       <div class="container">
         <div class="row">
           <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-            <div class="page-heading">
-              <h1>#.Net Core</h1>
-              <hr class="small">
+            <div class="post-heading">
+              <h1>Building an IoT temperature sensor (Part 2 of 3)</h1>
+                
+                
+                  <span class="post-meta">
+  Posted on June 5, 2019
+  
+</span>
+
+
+                
             </div>
           </div>
         </div>
@@ -96,54 +115,128 @@
     </div>
   </header>
 
+
     
-  <div class="container" role="main">
-    <div class="row">
-      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-        
-        <div class="posts-list">
-          
-            <article class="post-preview">
-              <a href="http://hubbins.github.io/post/docker-ubuntu/">
-                <h2 class="post-title">Running a .NET Core standalone deployment in an Ubuntu docker container</h2>
-    
-                
-              </a>
-    
-              <p class="post-meta">
-                Posted on May 28, 2017
-              </p>
-              <div class="post-entry">
-                
-                  <p>Steps for creating a base container for .NET deployments in Ubuntu and deploying a sample application.
+<div class="container">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+      <article role="main" class="blog-post">
+        <p>Building the Pi code to post the temperature reading to the cloud.
 </p>
-                  <a href="http://hubbins.github.io/post/docker-ubuntu/" class="post-read-more">[Read More]</a>
-                
-              </div>
-    
-              
-                <span class="post-meta">
-                  
-                    #<a href="/tags/development">Development</a>&nbsp;
-                  
-                    #<a href="/tags/docker">Docker</a>&nbsp;
-                  
-                    #<a href="/tags/c">C#</a>&nbsp;
-                  
-                    #<a href="/tags/.net-core">.NET Core</a>&nbsp;
-                  
-                    #<a href="/tags/ubuntu">Ubuntu</a>&nbsp;
-                  
-                </span>
-              
-    
-            </article>
-          
-        </div>
+
+<p>Once the circuit is built, then writing the code to get the temperature value is very straightforward.</p>
+
+<p>The big benefit of using this particular digital temperature sensor is that the Pi has support for it directly.  Because the Pi handles the low-level communication with the sensor, we simply just have to read and parse a text file.  We don&rsquo;t have to bother with any low-level GPIO programming.</p>
+
+<p>So we&rsquo;ll need a python app to do two things:<br />
+* Read the text file and parse the temperature value
+* Send the temperature value to a remote http endpoint</p>
+
+<p>Let&rsquo;s take a look at the code:</p>
+
+<pre><code class="language-python">import os
+import glob
+import time
+import urllib.request
+import json
+
+# define the AWS endpoint and API key
+endpoint = &quot;https://rpx74u5erj.execute-api.us-east-1.amazonaws.com/default/temperatureSensor&quot;
+apikey = &quot;8MKmctQXTC7tm5C2svuq91a9lTkqmis1xxxxxx&quot;
+
+# unique sensor id
+sensor_id = &quot;garage&quot;
+
+# folder containing the text file
+base_dir = '/sys/bus/w1/devices/'
+device_folder = glob.glob(base_dir + '28*')[0]
+device_file = device_folder + '/w1_slave'
+
+# read the lines of the text file into an array
+def read_temp_raw():
+    f = open(device_file, 'r')
+    lines = f.readlines()
+    f.close()
+    return lines
+
+# parse the temperature from the next file, retrying if the sensor is not ready(?)
+def read_temp():
+    lines = read_temp_raw()
+    while lines[0].strip()[-3:] != 'YES':
+        time.sleep(0.2)
+        lines = read_temp_raw()
+    equals_pos = lines[1].find('t=')
+    if equals_pos != -1:
+        temp_string = lines[1][equals_pos+2:]
+        temp_c = float(temp_string) / 1000.0
+        temp_f = temp_c * 9.0 / 5.0 + 32.0
+        return temp_c, temp_f
+
+
+# round and print the temperature in F
+temp_c, temp_f = read_temp()
+temp_f = round(temp_f, 2)
+print(temp_f)
+
+# create the JSON payload to send to the http endpoint
+payload = {}
+payload[&quot;sensor_id&quot;] = sensor_id
+payload[&quot;temperature&quot;] = temp_f
+
+# POST to the endpoint with the JSON payload
+req = urllib.request.Request(endpoint)
+req.add_header('Content-Type', 'application/json; charset=utf-8')
+jsondata = json.dumps(payload)
+jsondataasbytes = jsondata.encode('utf-8')   # needs to be bytes
+req.add_header('Content-Length', len(jsondataasbytes))
+req.add_header(&quot;x-api-key&quot;, apikey)
+response = urllib.request.urlopen(req, jsondataasbytes)
+</code></pre>
+
+<p>Next we copy this file (app3.py) to the home folder of the default &ldquo;pi&rdquo; user /home/pi.  You can use SFTP or another means to transfer the file.  VS Code has a nice plugin (SFTP) that when you save the file to your PC, it will also save the file in a remote folder on the Pi using SFTP.</p>
+
+<p>Then we can can create a cron task to run the app every 15 minutes.  Run the command &ldquo;sudo crontab -e&rdquo; then add this to the file:</p>
+
+<pre><code>*/15 * * * * python3 /home/pi/app3.py
+</code></pre>
+
+<p>In the last post in the series, we&rsquo;ll build the AWS services.</p>
+      </article>
+
+      <ul class="pager blog-pager">
         
-      </div>
+          <li class="previous">
+            <a href="http://hubbins.github.io/post/sensor-part1/" data-toggle="tooltip" data-placement="top" title="Building an IoT temperature sensor (Part 1 of 3)">&larr; Previous Post</a>
+          </li>
+        
+        
+      </ul>
+
+      
+        
+          <div class="disqus-comments">
+            <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'hubbins';
+    var disqus_identifier = 'http:\/\/hubbins.github.io\/post\/sensor-part2\/';
+    var disqus_title = 'Building an IoT temperature sensor (Part 2 of 3)';
+    var disqus_url = 'http:\/\/hubbins.github.io\/post\/sensor-part2\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+          </div>
+        
+      
+
     </div>
   </div>
+</div>
 
     <footer>
   <div class="container">
