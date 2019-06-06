@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>Building an IoT temperature sensor (Part 3 of 3)</title>
+  
+  <meta name="author" content="Sean O&#39;Connor"/>
+  <meta name="generator" content="Hugo 0.18.1" />
+  
+
+  <link rel="alternate" href="http://hubbins.github.io/index.xml" type="application/rss+xml" title="Sean&#39;s Tech Blog">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="http://hubbins.github.io//css/main.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" />
+  <link rel="stylesheet" href="http://hubbins.github.io//css/pygment_highlights.css" />
+  
+  
+  <meta property="og:title" content="Building an IoT temperature sensor (Part 3 of 3)" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="/post/sensor-part3/" />
+  <meta property="og:image" content="/" />
+
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/idea.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+</head>
+
+  <body>
+    <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="http://hubbins.github.io/">Sean&#39;s Tech Blog</a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="main-navbar">
+      <ul class="nav navbar-nav navbar-right">
+        
+          
+            <li>
+              <a title="Blog" href="/">Blog</a>
+            </li>
+          
+        
+          
+            <li>
+              <a title="About" href="/page/about/">About</a>
+            </li>
+          
+        
+
+        
+
+        
+      </ul>
+    </div>
+
+    <div class="avatar-container">
+      <div class="avatar-img-border">
+        
+      </div>
+    </div>
+
+  </div>
+</nav>
+
+
+
+
+    
+  
+  
+  
+
+
+
+
+  
+
+  <header class="header-section ">
+    
+    <div class="intro-header no-img">
+      
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+            <div class="post-heading">
+              <h1>Building an IoT temperature sensor (Part 3 of 3)</h1>
+                
+                
+                  <span class="post-meta">
+  Posted on June 6, 2019
+  
+</span>
+
+
+                
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+
+    
+<div class="container">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+      <article role="main" class="blog-post">
+        <p>Build the AWS services to monitor the temperature and detect failures.
+</p>
+
+<p>We want to accomplish a few main goals when developing the AWS services:</p>
+
+<ul>
+<li>Detect if the temperature falls beneath a certain threshold.  If so, notify a number of people via SMS.</li>
+<li>Detect if the temperature sensor stops sending readings due to some malfunction.  Hardware, power, no wifi, etc&hellip;  If so, notify the admin via SMS.</li>
+<li>Create a serverless environment with minimal running monthly costs.</li>
+</ul>
+
+<h1 id="detecting-sensor-failure">Detecting sensor failure</h1>
+
+<p>What I intend to do is each time a sensor sends an update, I will update a file in an S3 bucket with the timestamp of the temperature reading.  The key will be the sensor id.</p>
+
+<p>Then I will have a process to periodically check the timestamp in the S3 bucket and if it&rsquo;s older than some number of minutes, that means we haven&rsquo;t received a timely update and notify the admin.</p>
+
+<p>We can accomplish this using a Cloudwatch event and a lambda function.  The lambda function will be fired by the Cloudwatch event every 15 minutes, passing the sensor id as a parameter.  The lambda will check the timestamp for the respective sensor by finding the value in the S3 bucket.  If the timestamp is older than, say, 30 minutes, then notify the admin.</p>
+
+<h1 id="detecting-temperature-below-threshold-value">Detecting temperature below threshold value</h1>
+
+<p>We will have a lambda, triggered by API Gateway, that reads a temperature from a sensor.  First, it writes the current timestamp to the S3 bucket for this sensor, to show the sensor is active.  Next, see if the temperature has fallen below a certain temperature.  If so, then notify a number of people (in this case, the condo board members) via SMS.  The SMS message will indicate the sensor id and the temperature reading.</p>
+
+<h1 id="setting-up-aws">Setting up AWS</h1>
+
+<p>Let&rsquo;s setup a few simple things first:</p>
+
+<ul>
+<li>Create an S3 bucket, using default access (non-public), called &ldquo;home-monitor&rdquo;.</li>
+<li>Create a role &ldquo;home-monitor-role&rdquo; and attach the policies: AWSLambdaExecute (which includes S3) and AmazonSNSFullAccess</li>
+</ul>
+
+<p>These policies are pretty wide open.  Sufficient for my purpose, but locking them down to only specific buckets and SNS actions is a good idea.</p>
+
+<h1 id="sensor-failure-lambda">Sensor failure lambda</h1>
+
+<p>Let&rsquo;s take a look at the sensor failure lambda code.  This is periodically called by a Cloudwatch event.</p>
+
+<pre><code class="language-python">import json
+import os
+import datetime
+import boto3
+from dateutil import tz
+
+def lambda_handler(event, context):
+    
+    # get sensor id from event
+    sensor_id = str(event)
+    # get time zones to convert message to local time
+    from_zone = tz.gettz('UTC')
+    to_zone = tz.gettz('America/Chicago')
+
+    # read and parse the latest timestamp for this sensor
+    s3_client = boto3.client(&quot;s3&quot;)
+    obj = s3_client.get_object(Bucket=os.environ[&quot;BUCKET&quot;], Key=sensor_id)
+    timestamp_str = obj[&quot;Body&quot;].read().decode('utf-8')
+    timestamp_sensor = datetime.datetime.strptime(timestamp_str, &quot;%Y-%m-%dT%H:%M:%S.%f&quot;)
+    
+    timestamp_now = datetime.datetime.utcnow()
+    timestamp_30 = timestamp_now - datetime.timedelta(seconds=1800)
+    
+    # if timestamp in bucket is more than 30 minutes old, some failure, notify
+    if (timestamp_30 &gt; timestamp_sensor):
+        # send a text message to each phone number in the list
+        phone_numbers = os.environ[&quot;PHONE&quot;].split(&quot;|&quot;)
+        
+        # convert sensor time to local time
+        local_time = timestamp_sensor.replace(tzinfo=from_zone)
+
+        sns_client = boto3.client(&quot;sns&quot;)
+
+        for phone_number in phone_numbers:
+            response = sns_client.publish(
+                PhoneNumber=phone_number, 
+                Message=sensor_id + &quot; failed, last check in &quot; + str(local_time.astimezone(to_zone)),
+            )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps(event)
+    }
+</code></pre>
+
+<p>Here are the steps:</p>
+
+<ul>
+<li>Get the sensor id from the event passed in by the Cloudwatch event</li>
+<li>Get the sensor&rsquo;s latest update timestamp from the S3 bucket</li>
+<li>If the sensor&rsquo;s latest update is more than 30 minutes old, get a list of phone numbers from a lambda environment variable and send a text message indicating the sensor id that failed and its last checkin time</li>
+</ul>
+
+<p>Then setup a Cloudwatch event that triggers this lambda every 15 minutes, passing the sensor id as a parameter (Constant (JSON text)) with a value such as &ldquo;garage&rdquo; (with quotes).  You can also add multiple targets to the same Cloudwatch event, say with different sensor id&rsquo;s.  This way, you can reuse a single Cloudwatch event to track multiple sensors.</p>
+
+<h1 id="check-temperature">Check temperature</h1>
+
+<p>Let&rsquo;s look at the lambda code that handles the temperature threshold check:</p>
+
+<pre><code class="language-python">import json
+import os
+import datetime
+import boto3
+
+def lambda_handler(event, context):
+    
+    result = {}
+    
+    # get temperature threshold
+    threshold = float(os.environ[&quot;THRESHOLD&quot;])
+    
+    # get temperature and sensor_id from POST body
+    payload = json.loads(event[&quot;body&quot;])
+    temperature = float(payload[&quot;temperature&quot;])
+    sensor_id = payload[&quot;sensor_id&quot;]
+    
+    # write current timestamp to S3 bucket for this sensor
+    timestamp = datetime.datetime.utcnow().isoformat()
+    
+    s3_client = boto3.client(&quot;s3&quot;)
+    s3_client.put_object(Body=timestamp, Bucket=os.environ[&quot;BUCKET&quot;], Key=sensor_id)
+    
+    # if temperature is less than threshold, send a message with sensor name and temperature
+    if temperature &lt; threshold:
+        sns_client = boto3.client(&quot;sns&quot;)
+        
+        # send a text message to each phone number in the list
+        phone_numbers = os.environ[&quot;PHONE&quot;].split(&quot;|&quot;)
+
+        for phone_number in phone_numbers:
+            response = sns_client.publish(
+                PhoneNumber=phone_number, 
+                Message=sensor_id + &quot; &quot; + str(temperature) + &quot; degrees&quot;,
+            )
+        
+        result[&quot;sns&quot;] = response    # return last text message result
+    
+
+    result[&quot;timestamp&quot;] = timestamp
+    result[&quot;temperature&quot;] = temperature
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps(result)
+    }
+</code></pre>
+
+<p>Here are the steps:</p>
+
+<ul>
+<li>Get the temperature threshold from a lambda environment variable, such as 40</li>
+<li>Get the sensor payload and extract the temperature and the sensor id</li>
+<li>Write the current timestamp to the S3 bucket for this sensor id</li>
+<li>If the temperature falls beneath the threshold, get a list of phone numbers from a lambda environment variable, and send a text message</li>
+</ul>
+
+<p>Create an API Gateway trigger for this lambda, with an API key.  Note the API key for use in the code that runs on the Pi.</p>
+
+<h1 id="summary">Summary</h1>
+
+<p>We now have all the pieces in place.</p>
+
+<p>We have the Pi running, sending a temperature reading to API Gateway every 15 minutes.</p>
+
+<p>We have a lambda triggered by API Gateway that updates the latest active timestamp for the sensor.  Then if the reported temperature falls beneath the threshold, notifies a number of people via SMS.</p>
+
+<p>We have a lambda triggered by a Cloudwatch event that detects sensor failure and notifies the administrator.</p>
+
+<p>I don&rsquo;t know what the monthly AWS bill will be to run this.  We&rsquo;re talking about less than 100 API Gateway requests per day, half that many additional lambda request for failure checks, and a tiny amount of S3 storage.  Should be very minimal.  We&rsquo;ll see!</p>
+
+<p>Overall, a fun project that introduced basic sensor usage on the Pi, some basic Pi programming, and some basic IoT with AWS web services using Python.  Also allowed me to brush up on my terrible soldering skills!</p>
+      </article>
+
+      <ul class="pager blog-pager">
+        
+          <li class="previous">
+            <a href="http://hubbins.github.io/post/sensor-part2/" data-toggle="tooltip" data-placement="top" title="Building an IoT temperature sensor (Part 2 of 3)">&larr; Previous Post</a>
+          </li>
+        
+        
+      </ul>
+
+      
+        
+          <div class="disqus-comments">
+            
+            <div id="disqus_thread"></div>
+<div class="comments"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'hubbins';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+          </div>
+        
+      
+
+    </div>
+  </div>
+</div>
+
+    <footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center footer-links">
+          
+              <li>
+                <a href="mailto:blog@hubbins.com" title="Email me">
+                  <span class="fa-stack fa-lg">
+                    <i class="fa fa-circle fa-stack-2x"></i>
+                    <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                  </span>
+                </a>
+              </li>
+              <li>
+                <a href="https://github.com/hubbins" title="GitHub">
+                  <span class="fa-stack fa-lg">
+                    <i class="fa fa-circle fa-stack-2x"></i>
+                    <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                  </span>
+                </a>
+              </li>
+          
+        </ul>
+        <p class="credits copyright text-muted">
+          Sean O&#39;Connor
+          &nbsp;&bull;&nbsp;
+          2019
+
+          
+            &nbsp;&bull;&nbsp;
+            <a href="http://hubbins.github.io/">Sean&#39;s Tech Blog</a>
+          
+        </p>
+        
+        <p class="credits theme-by text-muted">
+          <a href="http://gohugo.io">Hugo v0.18.1</a> powered &nbsp;&bull;&nbsp; Theme by <a href="http://deanattali.com/beautiful-jekyll/">Beautiful Jekyll</a> adapted to <a href="https://github.com/halogenica/beautifulhugo">Beautiful Hugo</a>
+          
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js" integrity="sha384-/y1Nn9+QQAipbNQWU65krzJralCnuOasHncUFXGkdwntGeSvQicrYkiUBwsgUqc1" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/contrib/auto-render.min.js" integrity="sha384-dq1/gEHSxPZQ7DdrM82ID4YVol9BYyU7GbWlIwnwyPzotpoc57wDw/guX8EaYGPx" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="http://hubbins.github.io/js/main.js"></script>
+<script src="http://hubbins.github.io/js/highlight.min.js"></script>
+<script> hljs.initHighlightingOnLoad(); </script>
+<script> renderMathInElement(document.body); </script>
+
+
+
+
+
+  </body>
+</html>
+

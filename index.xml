@@ -8,8 +8,185 @@
     <language>en-us</language>
     <managingEditor>blog@hubbins.com (Sean O&#39;Connor)</managingEditor>
     <webMaster>blog@hubbins.com (Sean O&#39;Connor)</webMaster>
-    <lastBuildDate>Wed, 05 Jun 2019 19:00:00 -0500</lastBuildDate>
+    <lastBuildDate>Thu, 06 Jun 2019 12:00:00 -0500</lastBuildDate>
     <atom:link href="http://hubbins.github.io/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Building an IoT temperature sensor (Part 3 of 3)</title>
+      <link>http://hubbins.github.io/post/sensor-part3/</link>
+      <pubDate>Thu, 06 Jun 2019 12:00:00 -0500</pubDate>
+      <author>blog@hubbins.com (Sean O&#39;Connor)</author>
+      <guid>http://hubbins.github.io/post/sensor-part3/</guid>
+      <description>&lt;p&gt;Build the AWS services to monitor the temperature and detect failures.
+&lt;/p&gt;
+
+&lt;p&gt;We want to accomplish a few main goals when developing the AWS services:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Detect if the temperature falls beneath a certain threshold.  If so, notify a number of people via SMS.&lt;/li&gt;
+&lt;li&gt;Detect if the temperature sensor stops sending readings due to some malfunction.  Hardware, power, no wifi, etc&amp;hellip;  If so, notify the admin via SMS.&lt;/li&gt;
+&lt;li&gt;Create a serverless environment with minimal running monthly costs.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&#34;detecting-sensor-failure&#34;&gt;Detecting sensor failure&lt;/h1&gt;
+
+&lt;p&gt;What I intend to do is each time a sensor sends an update, I will update a file in an S3 bucket with the timestamp of the temperature reading.  The key will be the sensor id.&lt;/p&gt;
+
+&lt;p&gt;Then I will have a process to periodically check the timestamp in the S3 bucket and if it&amp;rsquo;s older than some number of minutes, that means we haven&amp;rsquo;t received a timely update and notify the admin.&lt;/p&gt;
+
+&lt;p&gt;We can accomplish this using a Cloudwatch event and a lambda function.  The lambda function will be fired by the Cloudwatch event every 15 minutes, passing the sensor id as a parameter.  The lambda will check the timestamp for the respective sensor by finding the value in the S3 bucket.  If the timestamp is older than, say, 30 minutes, then notify the admin.&lt;/p&gt;
+
+&lt;h1 id=&#34;detecting-temperature-below-threshold-value&#34;&gt;Detecting temperature below threshold value&lt;/h1&gt;
+
+&lt;p&gt;We will have a lambda, triggered by API Gateway, that reads a temperature from a sensor.  First, it writes the current timestamp to the S3 bucket for this sensor, to show the sensor is active.  Next, see if the temperature has fallen below a certain temperature.  If so, then notify a number of people (in this case, the condo board members) via SMS.  The SMS message will indicate the sensor id and the temperature reading.&lt;/p&gt;
+
+&lt;h1 id=&#34;setting-up-aws&#34;&gt;Setting up AWS&lt;/h1&gt;
+
+&lt;p&gt;Let&amp;rsquo;s setup a few simple things first:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Create an S3 bucket, using default access (non-public), called &amp;ldquo;home-monitor&amp;rdquo;.&lt;/li&gt;
+&lt;li&gt;Create a role &amp;ldquo;home-monitor-role&amp;rdquo; and attach the policies: AWSLambdaExecute (which includes S3) and AmazonSNSFullAccess&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;These policies are pretty wide open.  Sufficient for my purpose, but locking them down to only specific buckets and SNS actions is a good idea.&lt;/p&gt;
+
+&lt;h1 id=&#34;sensor-failure-lambda&#34;&gt;Sensor failure lambda&lt;/h1&gt;
+
+&lt;p&gt;Let&amp;rsquo;s take a look at the sensor failure lambda code.  This is periodically called by a Cloudwatch event.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import json
+import os
+import datetime
+import boto3
+from dateutil import tz
+
+def lambda_handler(event, context):
+    
+    # get sensor id from event
+    sensor_id = str(event)
+    # get time zones to convert message to local time
+    from_zone = tz.gettz(&#39;UTC&#39;)
+    to_zone = tz.gettz(&#39;America/Chicago&#39;)
+
+    # read and parse the latest timestamp for this sensor
+    s3_client = boto3.client(&amp;quot;s3&amp;quot;)
+    obj = s3_client.get_object(Bucket=os.environ[&amp;quot;BUCKET&amp;quot;], Key=sensor_id)
+    timestamp_str = obj[&amp;quot;Body&amp;quot;].read().decode(&#39;utf-8&#39;)
+    timestamp_sensor = datetime.datetime.strptime(timestamp_str, &amp;quot;%Y-%m-%dT%H:%M:%S.%f&amp;quot;)
+    
+    timestamp_now = datetime.datetime.utcnow()
+    timestamp_30 = timestamp_now - datetime.timedelta(seconds=1800)
+    
+    # if timestamp in bucket is more than 30 minutes old, some failure, notify
+    if (timestamp_30 &amp;gt; timestamp_sensor):
+        # send a text message to each phone number in the list
+        phone_numbers = os.environ[&amp;quot;PHONE&amp;quot;].split(&amp;quot;|&amp;quot;)
+        
+        # convert sensor time to local time
+        local_time = timestamp_sensor.replace(tzinfo=from_zone)
+
+        sns_client = boto3.client(&amp;quot;sns&amp;quot;)
+
+        for phone_number in phone_numbers:
+            response = sns_client.publish(
+                PhoneNumber=phone_number, 
+                Message=sensor_id + &amp;quot; failed, last check in &amp;quot; + str(local_time.astimezone(to_zone)),
+            )
+    
+    return {
+        &#39;statusCode&#39;: 200,
+        &#39;body&#39;: json.dumps(event)
+    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Here are the steps:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Get the sensor id from the event passed in by the Cloudwatch event&lt;/li&gt;
+&lt;li&gt;Get the sensor&amp;rsquo;s latest update timestamp from the S3 bucket&lt;/li&gt;
+&lt;li&gt;If the sensor&amp;rsquo;s latest update is more than 30 minutes old, get a list of phone numbers from a lambda environment variable and send a text message indicating the sensor id that failed and its last checkin time&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Then setup a Cloudwatch event that triggers this lambda every 15 minutes, passing the sensor id as a parameter (Constant (JSON text)) with a value such as &amp;ldquo;garage&amp;rdquo; (with quotes).  You can also add multiple targets to the same Cloudwatch event, say with different sensor id&amp;rsquo;s.  This way, you can reuse a single Cloudwatch event to track multiple sensors.&lt;/p&gt;
+
+&lt;h1 id=&#34;check-temperature&#34;&gt;Check temperature&lt;/h1&gt;
+
+&lt;p&gt;Let&amp;rsquo;s look at the lambda code that handles the temperature threshold check:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import json
+import os
+import datetime
+import boto3
+
+def lambda_handler(event, context):
+    
+    result = {}
+    
+    # get temperature threshold
+    threshold = float(os.environ[&amp;quot;THRESHOLD&amp;quot;])
+    
+    # get temperature and sensor_id from POST body
+    payload = json.loads(event[&amp;quot;body&amp;quot;])
+    temperature = float(payload[&amp;quot;temperature&amp;quot;])
+    sensor_id = payload[&amp;quot;sensor_id&amp;quot;]
+    
+    # write current timestamp to S3 bucket for this sensor
+    timestamp = datetime.datetime.utcnow().isoformat()
+    
+    s3_client = boto3.client(&amp;quot;s3&amp;quot;)
+    s3_client.put_object(Body=timestamp, Bucket=os.environ[&amp;quot;BUCKET&amp;quot;], Key=sensor_id)
+    
+    # if temperature is less than threshold, send a message with sensor name and temperature
+    if temperature &amp;lt; threshold:
+        sns_client = boto3.client(&amp;quot;sns&amp;quot;)
+        
+        # send a text message to each phone number in the list
+        phone_numbers = os.environ[&amp;quot;PHONE&amp;quot;].split(&amp;quot;|&amp;quot;)
+
+        for phone_number in phone_numbers:
+            response = sns_client.publish(
+                PhoneNumber=phone_number, 
+                Message=sensor_id + &amp;quot; &amp;quot; + str(temperature) + &amp;quot; degrees&amp;quot;,
+            )
+        
+        result[&amp;quot;sns&amp;quot;] = response    # return last text message result
+    
+
+    result[&amp;quot;timestamp&amp;quot;] = timestamp
+    result[&amp;quot;temperature&amp;quot;] = temperature
+    
+    return {
+        &#39;statusCode&#39;: 200,
+        &#39;body&#39;: json.dumps(result)
+    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Here are the steps:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Get the temperature threshold from a lambda environment variable, such as 40&lt;/li&gt;
+&lt;li&gt;Get the sensor payload and extract the temperature and the sensor id&lt;/li&gt;
+&lt;li&gt;Write the current timestamp to the S3 bucket for this sensor id&lt;/li&gt;
+&lt;li&gt;If the temperature falls beneath the threshold, get a list of phone numbers from a lambda environment variable, and send a text message&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Create an API Gateway trigger for this lambda, with an API key.  Note the API key for use in the code that runs on the Pi.&lt;/p&gt;
+
+&lt;h1 id=&#34;summary&#34;&gt;Summary&lt;/h1&gt;
+
+&lt;p&gt;We now have all the pieces in place.&lt;/p&gt;
+
+&lt;p&gt;We have the Pi running, sending a temperature reading to API Gateway every 15 minutes.&lt;/p&gt;
+
+&lt;p&gt;We have a lambda triggered by API Gateway that updates the latest active timestamp for the sensor.  Then if the reported temperature falls beneath the threshold, notifies a number of people via SMS.&lt;/p&gt;
+
+&lt;p&gt;We have a lambda triggered by a Cloudwatch event that detects sensor failure and notifies the administrator.&lt;/p&gt;
+
+&lt;p&gt;I don&amp;rsquo;t know what the monthly AWS bill will be to run this.  We&amp;rsquo;re talking about less than 100 API Gateway requests per day, half that many additional lambda request for failure checks, and a tiny amount of S3 storage.  Should be very minimal.  We&amp;rsquo;ll see!&lt;/p&gt;
+
+&lt;p&gt;Overall, a fun project that introduced basic sensor usage on the Pi, some basic Pi programming, and some basic IoT with AWS web services using Python.  Also allowed me to brush up on my terrible soldering skills!&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>Building an IoT temperature sensor (Part 2 of 3)</title>
@@ -88,6 +265,8 @@ req.add_header(&#39;Content-Length&#39;, len(jsondataasbytes))
 req.add_header(&amp;quot;x-api-key&amp;quot;, apikey)
 response = urllib.request.urlopen(req, jsondataasbytes)
 &lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Note that some values such as http endpoint, api key, and sensor id are hard-coded in the script.  These values could also be kept in a configuration file, environment variables, etc&amp;hellip;  Because this is a small and simple script, it&amp;rsquo;s good enough to keep it self-contained.  This isn&amp;rsquo;t production code.&lt;/p&gt;
 
 &lt;p&gt;Next we copy this file (app3.py) to the home folder of the default &amp;ldquo;pi&amp;rdquo; user /home/pi.  You can use SFTP or another means to transfer the file.  VS Code has a nice plugin (SFTP) that when you save the file to your PC, it will also save the file in a remote folder on the Pi using SFTP.&lt;/p&gt;
 
