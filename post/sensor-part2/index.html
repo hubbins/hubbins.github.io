@@ -1,140 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+    />
 
-  <title>Building an IoT temperature sensor (Part 2 of 3)</title>
-  
-  <meta name="author" content="Sean O&#39;Connor"/>
-  <meta name="generator" content="Hugo 0.18.1" />
-  
+    <title>Building an IoT temperature sensor (Part 2 of 3)</title>
 
-  <link rel="alternate" href="http://hubbins.github.io/index.xml" type="application/rss+xml" title="Sean&#39;s Tech Blog">
+    <meta name="author" content="Sean O&#39;Connor" />
+    <meta name="generator" content="Hugo 0.18.1" />
 
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
-  <link rel="stylesheet" href="http://hubbins.github.io//css/main.css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" />
-  <link rel="stylesheet" href="http://hubbins.github.io//css/pygment_highlights.css" />
-  
-  
-  <meta property="og:title" content="Building an IoT temperature sensor (Part 2 of 3)" />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="/post/sensor-part2/" />
-  <meta property="og:image" content="/" />
+    <link
+      rel="alternate"
+      href="http://hubbins.github.io/index.xml"
+      type="application/rss+xml"
+      title="Sean&#39;s Tech Blog"
+    />
 
-  
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/idea.min.css">
-  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/highlight.min.js"></script>
-  <script>hljs.initHighlightingOnLoad();</script>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="https://hubbins.github.io//css/main.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800"
+    />
+    <link
+      rel="stylesheet"
+      href="https://hubbins.github.io//css/pygment_highlights.css"
+    />
 
-</head>
+    <meta
+      property="og:title"
+      content="Building an IoT temperature sensor (Part 2 of 3)"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="/post/sensor-part2/" />
+    <meta property="og:image" content="/" />
+
+    <link
+      rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/idea.min.css"
+    />
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/highlight.min.js"></script>
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+  </head>
 
   <body>
     <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="http://hubbins.github.io/">Sean&#39;s Tech Blog</a>
-    </div>
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button
+            type="button"
+            class="navbar-toggle"
+            data-toggle="collapse"
+            data-target="#main-navbar"
+          >
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="http://hubbins.github.io/"
+            >Sean&#39;s Tech Blog</a
+          >
+        </div>
 
-    <div class="collapse navbar-collapse" id="main-navbar">
-      <ul class="nav navbar-nav navbar-right">
-        
-          
+        <div class="collapse navbar-collapse" id="main-navbar">
+          <ul class="nav navbar-nav navbar-right">
             <li>
               <a title="Blog" href="/">Blog</a>
             </li>
-          
-        
-          
+
             <li>
               <a title="About" href="/page/about/">About</a>
             </li>
-          
-        
+          </ul>
+        </div>
 
-        
-
-        
-      </ul>
-    </div>
-
-    <div class="avatar-container">
-      <div class="avatar-img-border">
-        
+        <div class="avatar-container">
+          <div class="avatar-img-border"></div>
+        </div>
       </div>
-    </div>
+    </nav>
 
-  </div>
-</nav>
+    <header class="header-section ">
+      <div class="intro-header no-img">
+        <div class="container">
+          <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+              <div class="post-heading">
+                <h1>Building an IoT temperature sensor (Part 2 of 3)</h1>
 
-
-
-
-    
-  
-  
-  
-
-
-
-
-  
-
-  <header class="header-section ">
-    
-    <div class="intro-header no-img">
-      
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-            <div class="post-heading">
-              <h1>Building an IoT temperature sensor (Part 2 of 3)</h1>
-                
-                
-                  <span class="post-meta">
-  Posted on June 5, 2019
-  
-</span>
-
-
-                
+                <span class="post-meta">
+                  Posted on June 5, 2019
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </header>
+    </header>
 
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+          <article role="main" class="blog-post">
+            <p>
+              Building the Pi code to post the temperature reading to the cloud.
+            </p>
 
-    
-<div class="container">
-  <div class="row">
-    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-      <article role="main" class="blog-post">
-        <p>Building the Pi code to post the temperature reading to the cloud.
-</p>
+            <p>
+              Once the circuit is built, then writing the code to get the
+              temperature value is very straightforward.
+            </p>
 
-<p>Once the circuit is built, then writing the code to get the temperature value is very straightforward.</p>
+            <p>
+              The big benefit of using this particular digital temperature
+              sensor is that the Pi has support for it directly. Because the Pi
+              handles the low-level communication with the sensor, we simply
+              just have to read and parse a text file. We don&rsquo;t have to
+              bother with any low-level GPIO programming.
+            </p>
 
-<p>The big benefit of using this particular digital temperature sensor is that the Pi has support for it directly.  Because the Pi handles the low-level communication with the sensor, we simply just have to read and parse a text file.  We don&rsquo;t have to bother with any low-level GPIO programming.</p>
+            <p>
+              So we&rsquo;ll need a python app to do two things:<br />
+              * Read the text file and parse the temperature value * Send the
+              temperature value to a remote http endpoint
+            </p>
 
-<p>So we&rsquo;ll need a python app to do two things:<br />
-* Read the text file and parse the temperature value
-* Send the temperature value to a remote http endpoint</p>
+            <p>Let&rsquo;s take a look at the code:</p>
 
-<p>Let&rsquo;s take a look at the code:</p>
-
-<pre><code class="language-python">import os
+            <pre><code class="language-python">import os
 import glob
 import time
 import urllib.request
@@ -193,68 +204,96 @@ req.add_header(&quot;x-api-key&quot;, apikey)
 response = urllib.request.urlopen(req, jsondataasbytes)
 </code></pre>
 
-<p>Note that some values such as http endpoint, api key, and sensor id are hard-coded in the script.  These values could also be kept in a configuration file, environment variables, etc&hellip;  Because this is a small and simple script, it&rsquo;s good enough to keep it self-contained.  This isn&rsquo;t production code.</p>
+            <p>
+              Note that some values such as http endpoint, api key, and sensor
+              id are hard-coded in the script. These values could also be kept
+              in a configuration file, environment variables, etc&hellip;
+              Because this is a small and simple script, it&rsquo;s good enough
+              to keep it self-contained. This isn&rsquo;t production code.
+            </p>
 
-<p>Next we copy this file (app3.py) to the home folder of the default &ldquo;pi&rdquo; user /home/pi.  You can use SFTP or another means to transfer the file.  VS Code has a nice plugin (SFTP) that when you save the file to your PC, it will also save the file in a remote folder on the Pi using SFTP.</p>
+            <p>
+              Next we copy this file (app3.py) to the home folder of the default
+              &ldquo;pi&rdquo; user /home/pi. You can use SFTP or another means
+              to transfer the file. VS Code has a nice plugin (SFTP) that when
+              you save the file to your PC, it will also save the file in a
+              remote folder on the Pi using SFTP.
+            </p>
 
-<p>Then we can can create a cron task to run the app every 15 minutes.  Run the command &ldquo;sudo crontab -e&rdquo; then add this to the file:</p>
+            <p>
+              Then we can can create a cron task to run the app every 15
+              minutes. Run the command &ldquo;sudo crontab -e&rdquo; then add
+              this to the file:
+            </p>
 
-<pre><code>*/15 * * * * python3 /home/pi/app3.py
+            <pre><code>*/15 * * * * python3 /home/pi/app3.py
 </code></pre>
 
-<p>In the last post in the series, we&rsquo;ll build the AWS services.</p>
-      </article>
+            <p>
+              In the last post in the series, we&rsquo;ll build the AWS
+              services.
+            </p>
+          </article>
 
-      <ul class="pager blog-pager">
-        
-          <li class="previous">
-            <a href="http://hubbins.github.io/post/sensor-part1/" data-toggle="tooltip" data-placement="top" title="Building an IoT temperature sensor (Part 1 of 3)">&larr; Previous Post</a>
-          </li>
-        
-        
-          <li class="next">
-            <a href="http://hubbins.github.io/post/sensor-part3/" data-toggle="tooltip" data-placement="top" title="Building an IoT temperature sensor (Part 3 of 3)">Next Post &rarr;</a>
-          </li>
-        
-      </ul>
+          <ul class="pager blog-pager">
+            <li class="previous">
+              <a
+                href="http://hubbins.github.io/post/sensor-part1/"
+                data-toggle="tooltip"
+                data-placement="top"
+                title="Building an IoT temperature sensor (Part 1 of 3)"
+                >&larr; Previous Post</a
+              >
+            </li>
 
-      
-        
+            <li class="next">
+              <a
+                href="http://hubbins.github.io/post/sensor-part3/"
+                data-toggle="tooltip"
+                data-placement="top"
+                title="Building an IoT temperature sensor (Part 3 of 3)"
+                >Next Post &rarr;</a
+              >
+            </li>
+          </ul>
+
           <div class="disqus-comments">
-            
             <div id="disqus_thread"></div>
-<div class="comments"></div>
-<script type="text/javascript">
+            <div class="comments"></div>
+            <script type="text/javascript">
+              (function() {
+                if (window.location.hostname == 'localhost') return;
 
-(function() {
-    
-    
-    if (window.location.hostname == "localhost")
-        return;
-
-    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-    var disqus_shortname = 'hubbins';
-    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-})();
-</script>
-<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-
+                var dsq = document.createElement('script');
+                dsq.type = 'text/javascript';
+                dsq.async = true;
+                var disqus_shortname = 'hubbins';
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (
+                  document.getElementsByTagName('head')[0] ||
+                  document.getElementsByTagName('body')[0]
+                ).appendChild(dsq);
+              })();
+            </script>
+            <noscript
+              >Please enable JavaScript to view the
+              <a href="http://disqus.com/?ref_noscript"
+                >comments powered by Disqus.</a
+              ></noscript
+            >
+            <a href="http://disqus.com/" class="dsq-brlink"
+              >comments powered by <span class="logo-disqus">Disqus</span></a
+            >
           </div>
-        
-      
-
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
     <footer>
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-        <ul class="list-inline text-center footer-links">
-          
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+            <ul class="list-inline text-center footer-links">
               <li>
                 <a href="mailto:blog@hubbins.com" title="Email me">
                   <span class="fa-stack fa-lg">
@@ -271,41 +310,55 @@ response = urllib.request.urlopen(req, jsondataasbytes)
                   </span>
                 </a>
               </li>
-          
-        </ul>
-        <p class="credits copyright text-muted">
-          Sean O&#39;Connor
-          &nbsp;&bull;&nbsp;
-          2019
+            </ul>
+            <p class="credits copyright text-muted">
+              Sean O&#39;Connor &nbsp;&bull;&nbsp; 2019 &nbsp;&bull;&nbsp;
+              <a href="http://hubbins.github.io/">Sean&#39;s Tech Blog</a>
+            </p>
 
-          
-            &nbsp;&bull;&nbsp;
-            <a href="http://hubbins.github.io/">Sean&#39;s Tech Blog</a>
-          
-        </p>
-        
-        <p class="credits theme-by text-muted">
-          <a href="http://gohugo.io">Hugo v0.18.1</a> powered &nbsp;&bull;&nbsp; Theme by <a href="http://deanattali.com/beautiful-jekyll/">Beautiful Jekyll</a> adapted to <a href="https://github.com/halogenica/beautifulhugo">Beautiful Hugo</a>
-          
-        </p>
+            <p class="credits theme-by text-muted">
+              <a href="http://gohugo.io">Hugo v0.18.1</a> powered
+              &nbsp;&bull;&nbsp; Theme by
+              <a href="http://deanattali.com/beautiful-jekyll/"
+                >Beautiful Jekyll</a
+              >
+              adapted to
+              <a href="https://github.com/halogenica/beautifulhugo"
+                >Beautiful Hugo</a
+              >
+            </p>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</footer>
+    </footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js" integrity="sha384-/y1Nn9+QQAipbNQWU65krzJralCnuOasHncUFXGkdwntGeSvQicrYkiUBwsgUqc1" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/contrib/auto-render.min.js" integrity="sha384-dq1/gEHSxPZQ7DdrM82ID4YVol9BYyU7GbWlIwnwyPzotpoc57wDw/guX8EaYGPx" crossorigin="anonymous"></script>
-<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-<script src="http://hubbins.github.io/js/main.js"></script>
-<script src="http://hubbins.github.io/js/highlight.min.js"></script>
-<script> hljs.initHighlightingOnLoad(); </script>
-<script> renderMathInElement(document.body); </script>
-
-
-
-
-
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js"
+      integrity="sha384-/y1Nn9+QQAipbNQWU65krzJralCnuOasHncUFXGkdwntGeSvQicrYkiUBwsgUqc1"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/contrib/auto-render.min.js"
+      integrity="sha384-dq1/gEHSxPZQ7DdrM82ID4YVol9BYyU7GbWlIwnwyPzotpoc57wDw/guX8EaYGPx"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://code.jquery.com/jquery-1.12.4.min.js"
+      integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+      integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://hubbins.github.io/js/main.js"></script>
+    <script src="https://hubbins.github.io/js/highlight.min.js"></script>
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+    <script>
+      renderMathInElement(document.body);
+    </script>
   </body>
 </html>
-
